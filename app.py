@@ -10,6 +10,7 @@ import utils
 
 MOCK = False
 
+pd.set_option('mode.chained_assignment', None)
 
 def read_data():
     transactions = utils.retrieve_data(MOCK)
@@ -57,15 +58,17 @@ def get_plotly_figures_double(data, transaction_df):
 
     
 def transform_data(model_choice, from_date, to_date, data, transaction_df):
+    print('PRE-TRANSFORMED:', transaction_df.shape)
     if model_choice != 'All':
+        print(f'Model {model_choice} selected. {transaction_df.shape}')
         transaction_df = transaction_df[transaction_df['MODEL']==model_choice]
-
+    else:
+        print('All selected.', transaction_df.shape)
+    print(f'PRE-DATE: {transaction_df.shape}')
     transaction_df = transaction_df.query("TIMESTAMP >= @from_date & TIMESTAMP <= @to_date")
-    
+    print(f'POST-DATE: {from_date} - {to_date}. {transaction_df.shape}')
     data = data.query("Time >= @from_date & Time <= @to_date")
     data['Time'] = data['Time'].dt.strftime('%Y-%m-%d %H:%M')
-    data = data.drop_duplicates(subset='Time')
-
     transaction_df['TIMESTAMP'] = transaction_df['TIMESTAMP'].dt.strftime('%Y-%m-%d %H:%M')
     return data, transaction_df
 
@@ -94,6 +97,7 @@ if __name__=='__main__':
 
         data, transaction_df = transform_data(model_choice, from_date, to_date, data, transaction_df)
         
+        print('POST-TRANSACTION_DF:', transaction_df.shape)
         figure = get_plotly_figures_double(data, transaction_df)
 
         c2 = hy.container()
