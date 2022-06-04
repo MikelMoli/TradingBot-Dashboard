@@ -1,4 +1,5 @@
 
+from datetime import timedelta
 import os
 import pandas as pd
 
@@ -51,39 +52,12 @@ def get_bounds_df(data):
     return data.copy()
 
 
-def get_bound_graph(dataframe):
-    """    fig = go.Figure([
-        go.Scatter(
-            name='Measurement',
-            x=dataframe['Time'],
-            y=dataframe['10 Min Sampled Avg'],
-            mode='lines',
-            line=dict(color='rgb(31, 119, 180)'),
-        ),
-        go.Scatter(
-            name='Upper Bound',
-            x=dataframe['Time'],
-            y=dataframe['10 Min Sampled Avg'],
-            mode='lines',
-            marker=dict(color="#444"),
-            line=dict(width=0),
-            showlegend=False
-        ),
-        go.Scatter(
-            name='Lower Bound',
-            x=dataframe['Time'],
-            y=dataframe['10 Min Sampled Avg'],
-            marker=dict(color="#444"),
-            line=dict(width=0),
-            mode='lines',
-            fillcolor='rgba(68, 68, 68, 0.3)',
-            fill='tonexty',
-            showlegend=False
-        )
-    ])"""
+def get_bound_graph(dataframe, transaction_df):
+
+    df_buys = transaction_df.query('ORDER_TYPE=="Buy"')
+    df_sells = transaction_df.query('ORDER_TYPE=="Sell"')
 
     fig = go.Figure([
-
         go.Scatter(
             name='Close',
             x=dataframe['Time'],
@@ -119,7 +93,41 @@ def get_bound_graph(dataframe):
             mode='lines',
             fill='tonexty',
             showlegend=False
-            )
+            ),
+
+        # AÑADIR UN SCATTER DE BUY Y OTRO DE SELLS
+        go.Scatter(
+            mode='markers',
+            x=df_buys['TIMESTAMP'],
+            y=df_buys['BUY_PRICE'],
+            marker=dict(
+                color='chartreuse',
+                size=10,
+                line=dict(
+                    color='MediumPurple',
+                    width=1
+                ),
+                symbol='arrow-bar-right'
+            ),
+            name = 'Buy',
+            showlegend=False
+        ),
+        go.Scatter(
+            mode='markers',
+            x=df_sells['TIMESTAMP'],
+            y=df_sells['SELL_PRICE'],
+            marker=dict(
+                color='crimson',
+                size=10,
+                line=dict(
+                    color='MediumPurple',
+                    width=1
+                ),
+                symbol='arrow-bar-left'
+            ),
+            name = 'Sell',
+            showlegend=False
+        )
     ])
 
 
@@ -136,12 +144,20 @@ def get_bound_graph(dataframe):
                       plot_bgcolor='rgba(0,0,0,0.05)')
     return fig
 
-def transform_bounds_data(data, model, from_date, to_date):
+def transform_app2_data(data, transaction_df, model, from_date, to_date):
+
     if model != 'All':
         data = data.query('Model==@model')
+        transaction_df = transaction_df.query('MODEL==@model')
     
     data['Time'] = pd.to_datetime(data['Time'])
-    data = data.query("Time >= @from_date & Time <= @to_date")
-    data['Time'] = data['Time'].dt.strftime('%Y-%m-%d %H:%M')
+    transaction_df['TIMESTAMP'] = pd.to_datetime(transaction_df['TIMESTAMP'])
+    transaction_df['TIMESTAMP'] = transaction_df['TIMESTAMP'].apply(lambda x: x - timedelta(hours=2))
 
-    return data
+    transaction_df = transaction_df.query("TIMESTAMP >= @from_date & TIMESTAMP <= @to_date")
+    data = data.query("Time >= @from_date & Time <= @to_date")
+    
+    data['Time'] = data['Time'].dt.strftime('%Y-%m-%d %H:%M')
+    transaction_df['TIMESTAMP'] = transaction_df['TIMESTAMP'].dt.strftime('%Y-%m-%d %H:%M')
+
+    return data, transaction_df

@@ -1,3 +1,4 @@
+from datetime import timedelta
 import streamlit as st
 import pandas as pd
 import hydralit as hy
@@ -85,19 +86,20 @@ if __name__=='__main__':
         data_min_date = data['Time'].min()
         data_max_date = data['Time'].max()
 
+        filter_min_date = data_max_date - timedelta(days=30)
+
         #with hy.sidebar:
         # model_choice= hy.selectbox('Select your vehicle:', model_choices)
         with c1:
             model_choice = col1.selectbox('Model:', utils.MODELS)
-            from_date = col2.date_input(label="Start Date", value=data_min_date, min_value=data_min_date, max_value=data_max_date)
+            from_date = col2.date_input(label="Start Date", value=filter_min_date, min_value=data_min_date, max_value=data_max_date)
             to_date = col3.date_input(label="End Date", value=data_max_date, min_value=data_min_date, max_value=data_max_date)
 
         #from_date = hy.date_input(label="Start Date", value=data_min_date, min_value=data_min_date, max_value=data_max_date)
         #to_date = hy.date_input(label="End Date", value=data_max_date, min_value=data_min_date, max_value=data_max_date)
 
         data, transaction_df = transform_data(model_choice, from_date, to_date, data, transaction_df)
-        
-        print('POST-TRANSACTION_DF:', transaction_df.shape)
+
         figure = get_plotly_figures_double(data, transaction_df)
 
         c2 = hy.container()
@@ -114,23 +116,33 @@ if __name__=='__main__':
         c1 = hy.container()
         col1, col2, col3 = hy.columns(3)
 
+        c2 = hy.container()
+        col4, col5, col6 = hy.columns(3)
+
         data, transaction_df = read_data()
 
         data_min_date = data['Time'].min()
         data_max_date = data['Time'].max()
 
+        filter_min_date = data_max_date - timedelta(days=30)
+
         with c1:
             model_choice = col1.selectbox('Model:', utils.MODELS)
-            from_date = col2.date_input(label="Start Date", value=data_min_date, min_value=data_min_date, max_value=data_max_date)
+            from_date = col2.date_input(label="Start Date", value=filter_min_date, min_value=data_min_date, max_value=data_max_date)
             to_date = col3.date_input(label="End Date", value=data_max_date, min_value=data_min_date, max_value=data_max_date)
 
+        with c2:
+            col4.metric("KPI 1", 50)
+            col5.metric("KPI 2", 50)
+            col6.metric("KPI 3", 50)
+
         bounds_df = utils.get_bounds_df(data)
-        bounds_df = utils.transform_bounds_data(bounds_df, model_choice, from_date, to_date)
+        bounds_df, transaction_df = utils.transform_app2_data(bounds_df, transaction_df, model_choice, from_date, to_date)
         # data, _ = transform_data(model_choice, from_date, to_date, data, transaction_df.copy())
 
         
         #figure = get_plotly_figures_double(data, transaction_df)
-        fig_bounds = utils.get_bound_graph(bounds_df)
+        fig_bounds = utils.get_bound_graph(bounds_df, transaction_df)
         hy.plotly_chart(fig_bounds, use_container_width=False)
 
         hy.dataframe(bounds_df)
