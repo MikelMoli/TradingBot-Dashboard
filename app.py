@@ -87,14 +87,14 @@ if __name__=='__main__':
         data_max_date = data['Time'].max()
 
         filter_min_date = data_max_date - timedelta(days=30)
-
+        filter_max_date = data_max_date + timedelta(days=1)
         #with hy.sidebar:
         # model_choice= hy.selectbox('Select your vehicle:', model_choices)
 
         with c1:
             model_choice = col1.selectbox('Model:', utils.MODELS)
-            from_date = col2.date_input(label="Start Date", value=filter_min_date, min_value=data_min_date, max_value=data_max_date)
-            to_date = col3.date_input(label="End Date", value=data_max_date, min_value=data_min_date, max_value=data_max_date)
+            from_date = col2.date_input(label="Start Date", value=filter_min_date, min_value=data_min_date, max_value=filter_max_date)
+            to_date = col3.date_input(label="End Date", value=filter_max_date, min_value=data_min_date, max_value=filter_max_date)
 
 
 
@@ -136,14 +136,15 @@ if __name__=='__main__':
         data_max_date = data['Time'].max()
 
         filter_min_date = data_max_date - timedelta(days=30)
+        filter_max_date = data_max_date + timedelta(days=1)
 
         model_list = utils.MODELS.copy()
         model_list.remove('All')
 
         with c1:
             model_choice = col1.selectbox('Model:', model_list)
-            from_date = col2.date_input(label="Start Date", value=filter_min_date, min_value=data_min_date, max_value=data_max_date)
-            to_date = col3.date_input(label="End Date", value=data_max_date, min_value=data_min_date, max_value=data_max_date)
+            from_date = col2.date_input(label="Start Date", value=filter_min_date, min_value=data_min_date, max_value=filter_max_date)
+            to_date = col3.date_input(label="End Date", value=filter_max_date, min_value=data_min_date, max_value=filter_max_date)
 
 
 
