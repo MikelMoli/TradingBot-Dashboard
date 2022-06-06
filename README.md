@@ -9,6 +9,5 @@ Related to: https://github.com/unaiLopez/Trading-Bot
 2. Create KPIs:
     - ROI 
     - Inversión acumulada
-    - Número de transacciones ganadas y perdidas
     - ROI de buy and hold 
 3. Create Buy and Hold Baselines

@@ -22,11 +22,9 @@ def retrieve_data(mock):
         for file in filenames:
             df = pd.read_csv(f'./data/{file}')
             model = file.split('_')[1].split('.')[0]
-            print(model,':', df.shape)
             df['MODEL'] = model
             data = pd.concat([data, df], axis=0, ignore_index=True)
     
-    print('RETRIEVE-DATA:', data.shape)
     return data
 
 def get_bounds_df(data):
